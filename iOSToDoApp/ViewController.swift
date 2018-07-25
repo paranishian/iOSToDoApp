@@ -12,8 +12,7 @@ import RealmSwift
 // MARK: Model
 
 final class TaskList: Object {
-    dynamic var text = ""
-    dynamic var id = ""
+    dynamic var id = 0
     let items = List<Task>()
     
     override static func primaryKey() -> String? {
@@ -22,13 +21,17 @@ final class TaskList: Object {
 }
 
 final class Task: Object {
+    dynamic var id = UUID().uuidString
     dynamic var text = ""
     dynamic var completed = false
-    dynamic var order = 0
+    
+    override static func primaryKey() -> String? {
+        return "id"
+    }
 }
 
 class ViewController: UITableViewController {
-    var items: Results<Task>!
+    var items = List<Task>()
     var notificationToken: NotificationToken?
     var realm: Realm!
 
@@ -36,6 +39,7 @@ class ViewController: UITableViewController {
         super.viewDidLoad()
         setupUI()
         setupRealm()
+        print(realm.objects(TaskList.self))
     }
     
     func setupUI() {
@@ -48,7 +52,9 @@ class ViewController: UITableViewController {
     func setupRealm() {
         self.realm = try! Realm()
         func updateList() {
-            items = realm.objects(Task.self).sorted(byKeyPath: "order")
+            if let list = realm.objects(TaskList.self).first {
+                items = list.items
+            }
             tableView.reloadData()
         }
         updateList()
@@ -106,8 +112,13 @@ class ViewController: UITableViewController {
         alertController.addAction(UIAlertAction(title: "Add", style: .default) { _ in
             guard let text = alertTextField.text , !text.isEmpty else { return }
 
+            let list = self.realm.objects(TaskList.self).first
+            print(list?.items)
             try! self.realm.write {
-                self.realm.add(Task(value: ["text": text, "order": self.realm.objects(Task.self).count + 1]))
+//                let task = Task(value: ["text": text])
+//                self.items.append(task)
+//                self.realm.add(self.items, update: true)
+                self.items.insert(Task(value: ["text": text]), at: 0)
             }
         })
         present(alertController, animated: true, completion: nil)

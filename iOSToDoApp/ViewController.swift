@@ -21,13 +21,8 @@ final class TaskList: Object {
 }
 
 final class Task: Object {
-    dynamic var id = UUID().uuidString
     dynamic var text = ""
     dynamic var completed = false
-    
-    override static func primaryKey() -> String? {
-        return "id"
-    }
 }
 
 class ViewController: UITableViewController {
@@ -39,7 +34,6 @@ class ViewController: UITableViewController {
         super.viewDidLoad()
         setupUI()
         setupRealm()
-        print(realm.objects(TaskList.self))
     }
     
     func setupUI() {
@@ -50,8 +44,15 @@ class ViewController: UITableViewController {
     }
     
     func setupRealm() {
-        self.realm = try! Realm()
+        let config = Realm.Configuration(schemaVersion: 1)
+        self.realm = try! Realm(configuration: config)
         func updateList() {
+            // まだTaskListが存在しない場合は追加する
+            if realm.objects(TaskList.self).count == 0 {
+                try! realm.write {
+                    realm.add(TaskList())
+                }
+            }
             if let list = realm.objects(TaskList.self).first {
                 items = list.items
             }
@@ -83,9 +84,9 @@ class ViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        print(items)
-        print("source: %@", sourceIndexPath.row)
-        print("dest  : %@", destinationIndexPath.row)
+        try! realm.write {
+            items.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+        }
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
@@ -94,9 +95,6 @@ class ViewController: UITableViewController {
                 let item = items[indexPath.row]
                 realm.delete(item)
             }
-        }
-        if editingStyle == .none {
-            print("none!!")
         }
     }
 
@@ -112,13 +110,8 @@ class ViewController: UITableViewController {
         alertController.addAction(UIAlertAction(title: "Add", style: .default) { _ in
             guard let text = alertTextField.text , !text.isEmpty else { return }
 
-            let list = self.realm.objects(TaskList.self).first
-            print(list?.items)
             try! self.realm.write {
-//                let task = Task(value: ["text": text])
-//                self.items.append(task)
-//                self.realm.add(self.items, update: true)
-                self.items.insert(Task(value: ["text": text]), at: 0)
+                self.items.insert(Task(value: ["text": text]), at: self.items.filter("completed = false").count)
             }
         })
         present(alertController, animated: true, completion: nil)

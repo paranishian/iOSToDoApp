@@ -237,6 +237,7 @@
 				TargetAttributes = {
 					C1B0642B20FF4A2D00033790 = {
 						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = XDPE34R3T2;
 						ProvisioningStyle = Automatic;
 					};
 					C1B0643F20FF4A2E00033790 = {
@@ -526,6 +527,7 @@
 			baseConfigurationReference = 1E09A4F512C918C9A8977B6C /* Pods-iOSToDoApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = XDPE34R3T2;
 				INFOPLIST_FILE = iOSToDoApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.paranishian.iOSToDoApp;
@@ -539,6 +541,7 @@
 			baseConfigurationReference = 35808CB73384DF32322A30FC /* Pods-iOSToDoApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = XDPE34R3T2;
 				INFOPLIST_FILE = iOSToDoApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.paranishian.iOSToDoApp;

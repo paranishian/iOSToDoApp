@@ -12,8 +12,7 @@ import RealmSwift
 // MARK: Model
 
 final class TaskList: Object {
-    dynamic var text = ""
-    dynamic var id = ""
+    dynamic var id = 0
     let items = List<Task>()
     
     override static func primaryKey() -> String? {
@@ -24,11 +23,10 @@ final class TaskList: Object {
 final class Task: Object {
     dynamic var text = ""
     dynamic var completed = false
-    dynamic var order = 0
 }
 
 class ViewController: UITableViewController {
-    var items: Results<Task>!
+    var items = List<Task>()
     var notificationToken: NotificationToken?
     var realm: Realm!
 
@@ -46,9 +44,18 @@ class ViewController: UITableViewController {
     }
     
     func setupRealm() {
-        self.realm = try! Realm()
+        let config = Realm.Configuration(schemaVersion: 1)
+        self.realm = try! Realm(configuration: config)
         func updateList() {
-            items = realm.objects(Task.self).sorted(byKeyPath: "order")
+            // まだTaskListが存在しない場合は追加する
+            if realm.objects(TaskList.self).count == 0 {
+                try! realm.write {
+                    realm.add(TaskList())
+                }
+            }
+            if let list = realm.objects(TaskList.self).first {
+                items = list.items
+            }
             tableView.reloadData()
         }
         updateList()
@@ -77,9 +84,9 @@ class ViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        print(items)
-        print("source: %@", sourceIndexPath.row)
-        print("dest  : %@", destinationIndexPath.row)
+        try! realm.write {
+            items.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+        }
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
@@ -88,9 +95,6 @@ class ViewController: UITableViewController {
                 let item = items[indexPath.row]
                 realm.delete(item)
             }
-        }
-        if editingStyle == .none {
-            print("none!!")
         }
     }
 
@@ -107,7 +111,7 @@ class ViewController: UITableViewController {
             guard let text = alertTextField.text , !text.isEmpty else { return }
 
             try! self.realm.write {
-                self.realm.add(Task(value: ["text": text, "order": self.realm.objects(Task.self).count + 1]))
+                self.items.insert(Task(value: ["text": text]), at: self.items.filter("completed = false").count)
             }
         })
         present(alertController, animated: true, completion: nil)

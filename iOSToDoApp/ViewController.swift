@@ -84,17 +84,34 @@ class ViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        try! realm.write {
+        try! items.realm?.write {
             items.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
         }
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            try! realm.write {
-                let item = items[indexPath.row]
+            let item = items[indexPath.row]
+            try! item.realm?.write {
                 realm.delete(item)
             }
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let item = items[indexPath.row]
+        try! item.realm?.write {
+            item.completed = !item.completed
+            let destinationIndexPath: IndexPath
+            if item.completed {
+                // move cell to bottom
+                destinationIndexPath = IndexPath(row: items.count - 1, section: 0)
+            } else {
+                // move cell just above the first completed item
+                let uncompletedCount = items.filter("completed = false").count
+                destinationIndexPath = IndexPath(row: uncompletedCount - 1, section: 0)
+            }
+            items.move(from: indexPath.row, to: destinationIndexPath.row)
         }
     }
 
@@ -110,8 +127,9 @@ class ViewController: UITableViewController {
         alertController.addAction(UIAlertAction(title: "Add", style: .default) { _ in
             guard let text = alertTextField.text , !text.isEmpty else { return }
 
-            try! self.realm.write {
-                self.items.insert(Task(value: ["text": text]), at: self.items.filter("completed = false").count)
+            let items = self.items
+            try! items.realm?.write {
+                items.insert(Task(value: ["text": text]), at: items.filter("completed = false").count)
             }
         })
         present(alertController, animated: true, completion: nil)

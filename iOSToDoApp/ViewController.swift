@@ -39,6 +39,7 @@ class ViewController: UITableViewController {
     func setupUI() {
         title = "My Tasks"
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.allowsSelection = false;
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(add))
         navigationItem.leftBarButtonItem = editButtonItem
     }
@@ -123,23 +124,6 @@ class ViewController: UITableViewController {
         })
         return UISwipeActionsConfiguration(actions: [deleteAction])
     }
-    
-//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let item = items[indexPath.row]
-//        try! item.realm?.write {
-//            item.completed = !item.completed
-//            let destinationIndexPath: IndexPath
-//            if item.completed {
-//                // move cell to bottom
-//                destinationIndexPath = IndexPath(row: items.count - 1, section: 0)
-//            } else {
-//                // move cell just above the first completed item
-//                let uncompletedCount = items.filter("completed = false").count
-//                destinationIndexPath = IndexPath(row: uncompletedCount - 1, section: 0)
-//            }
-//            items.move(from: indexPath.row, to: destinationIndexPath.row)
-//        }
-//    }
 
     // MARK: Functions
     

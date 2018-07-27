@@ -29,7 +29,7 @@ class ViewController: UITableViewController {
     var items = List<Task>()
     var notificationToken: NotificationToken?
     var realm: Realm!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -114,8 +114,8 @@ class ViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive,
-                                            title:  "削除",
-                                            handler: { (action: UIContextualAction, view: UIView, success :(Bool) -> Void) in
+                                              title:  "削除",
+                                              handler: { (action: UIContextualAction, view: UIView, success :(Bool) -> Void) in
                                                 let item = self.items[indexPath.row]
                                                 try! item.realm?.write {
                                                     self.realm.delete(item)
@@ -124,7 +124,7 @@ class ViewController: UITableViewController {
         })
         return UISwipeActionsConfiguration(actions: [deleteAction])
     }
-
+    
     // MARK: Functions
     
     func add() {
@@ -136,7 +136,7 @@ class ViewController: UITableViewController {
         }
         alertController.addAction(UIAlertAction(title: "Add", style: .default) { _ in
             guard let text = alertTextField.text , !text.isEmpty else { return }
-
+            
             let items = self.items
             try! items.realm?.write {
                 items.insert(Task(value: ["text": text]), at: items.filter("completed = false").count)

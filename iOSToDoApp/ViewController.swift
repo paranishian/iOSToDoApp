@@ -89,31 +89,57 @@ class ViewController: UITableViewController {
         }
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let item = items[indexPath.row]
-            try! item.realm?.write {
-                realm.delete(item)
-            }
-        }
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        let item = self.items[indexPath.row]
+        return !item.completed
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let item = items[indexPath.row]
-        try! item.realm?.write {
-            item.completed = !item.completed
-            let destinationIndexPath: IndexPath
-            if item.completed {
-                // move cell to bottom
-                destinationIndexPath = IndexPath(row: items.count - 1, section: 0)
-            } else {
-                // move cell just above the first completed item
-                let uncompletedCount = items.filter("completed = false").count
-                destinationIndexPath = IndexPath(row: uncompletedCount - 1, section: 0)
-            }
-            items.move(from: indexPath.row, to: destinationIndexPath.row)
-        }
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let completeAction = UIContextualAction(style: .destructive,
+                                                title:  "完了",
+                                                handler: { (action: UIContextualAction, view: UIView, success :(Bool) -> Void) in
+                                                    let item = self.items[indexPath.row]
+                                                    try! item.realm?.write {
+                                                        item.completed = true
+                                                        let destinationIndexPath = IndexPath(row: self.items.count - 1, section: 0)
+                                                        self.items.move(from: indexPath.row, to: destinationIndexPath.row)
+                                                    }
+                                                    success(true)
+        })
+        completeAction.backgroundColor = .blue
+        
+        return UISwipeActionsConfiguration(actions: [completeAction])
     }
+    
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive,
+                                            title:  "削除",
+                                            handler: { (action: UIContextualAction, view: UIView, success :(Bool) -> Void) in
+                                                let item = self.items[indexPath.row]
+                                                try! item.realm?.write {
+                                                    self.realm.delete(item)
+                                                }
+                                                success(true)
+        })
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+    
+//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        let item = items[indexPath.row]
+//        try! item.realm?.write {
+//            item.completed = !item.completed
+//            let destinationIndexPath: IndexPath
+//            if item.completed {
+//                // move cell to bottom
+//                destinationIndexPath = IndexPath(row: items.count - 1, section: 0)
+//            } else {
+//                // move cell just above the first completed item
+//                let uncompletedCount = items.filter("completed = false").count
+//                destinationIndexPath = IndexPath(row: uncompletedCount - 1, section: 0)
+//            }
+//            items.move(from: indexPath.row, to: destinationIndexPath.row)
+//        }
+//    }
 
     // MARK: Functions
     
